@@ -1,78 +1,30 @@
-import threading
+import csv
+import optparse
+import urllib2
 
-class URLList():
-    """
-    docstring for URLList
-    """
-    def __init__(self, threading_lock):
-        self._threading_lock = threading_lock
-        self._exit_flag = False
-        self._list = []
-        self._append_count = 0
-        self._pop_count = 0
+def createOptionParser():
+    usage = 'usage: %prog [options] arg1 arg2'
+    version = '%prog 1.0'
+    parser = optparse.OptionParser(usage=usage, version=version)
+    parser.add_option('-v', '--verbose', action='store_true', dest='verbose', default=True)
+    parser.add_option('-q', '--quiet', action='store_false', dest='verbose', help='This is a help of quiet')
+    parser.add_option('-t', action='count', dest='count', default=2, help='help for -t')
 
-    def pop(self):
-        self._threading_lock.acquire()
-        if len(self._list) > 0:
-            url = self._list.pop()
-            print '[pop]', url
-            self._pop_count += 1
-        self._threading_lock.release()
+    group = optparse.OptionGroup(parser, 'Test Group')
+    group.add_option('-a', '-b', action='store_false', dest='test', help='help for -a or -b')
+    group.add_option('-f', dest='filename', metavar='FILE', help='help for -f')
 
-    def append(self, obj):
-        self._threading_lock.acquire()
-        print '[append]', obj
-        self._list.append(obj)
-        self._append_count += 1
-        self._threading_lock.release()
+    parser.add_option_group(group)
 
-
-
-class AppendThread(threading.Thread):
-    """
-    docstring for AppendThread
-    """
-    def __init__(self, thread_id, count, url_list):
-        super(AppendThread, self).__init__()
-        self._thread_id = thread_id
-        self._count = count
-        self._url_list = url_list
-
-    def run(self):
-        while self._count:
-            url = 'thread_id: ' + str(self._thread_id) + ' count: ' + str(self._count)
-            self._url_list.append(url)
-            self._count -= 1
-
-
-class PopThread(threading.Thread):
-    """
-    docstring for PopThread
-    """
-    def __init__(self, thread_id, url_list):
-        super(PopThread, self).__init__()
-        self._thread_id = thread_id
-        self._url_list = url_list
-
-    def run(self):
-        while True:
-            self._url_list.pop()
-
-
-def _test():
-    """
-    a test function
-    """
-    thread_lock = threading.Lock()
-    url_list = URLList(thread_lock)
-
-    at1 = AppendThread(1, 10, url_list)
-    at2 = AppendThread(2, 20, url_list)
-    pt = PopThread(3, url_list)
-
-    pt.start()
-    at1.start()
-    at2.start()
+    return parser
 
 if __name__ == '__main__':
-    _test()
+    # test for optparse
+    parser = createOptionParser()
+    (options, args) = parser.parse_args()
+    print options
+    print args
+
+    print csv.change_to_formatted('\"')
+
+    # response = urllib2.urlopen('http://www.baidu.com')

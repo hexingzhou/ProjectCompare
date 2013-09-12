@@ -44,7 +44,11 @@ def change_dict_to_string(dict_value, tag_array):
         if len(_string) > 0:
                 _string += ','
         if tag in dict_value:
-            _string += change_to_formatted(str(dict_value[tag]))
+            __str = change_to_formatted(str(dict_value[tag]))
+            if len(__str) > 0:
+                _string += __str
+            else:
+                _string += __random_magic_word
         else:
             _string += __random_magic_word
     _string = _string.replace(__random_magic_word, '')

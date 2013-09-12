@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compare>
+	<list id="filter_regex">
+		<string>.*\\\.svn\\.*</string>
+		<string>.*\\bin\\.*</string>
+		<string>.*\\gen\\.*</string>
+	</list>
+	<list id="count_regex">
+		<string>.*\\src\\.*</string>
+		<string>.*\\res\\.*</string>
+		<string>.*\\assets\\.*</string>
+		<string>.*\\libs\\.*</string>
+	</list>
+</compare>

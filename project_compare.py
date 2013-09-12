@@ -5,7 +5,6 @@ files with biggest different in size.
 """
 import csv
 import filecmp
-import getopt
 import optparse
 import os
 import re
@@ -23,12 +22,15 @@ def create_option_parser():
     parser = optparse.OptionParser(usage=usage, version=version)
 
     parser.add_option('-c', '--config', 
-        dest='config_file', metavar='FILE', default='compare.xml', help='')
-    parser.add_option('--source', dest='source', help='')
-    parser.add_option('--compare', dest='compare', help='')
-    parser.add_option('--number', dest='number', type='int', default=10, help='')
+        dest='config_file', metavar='FILE', default='compare.xml', help='config xml file')
+    parser.add_option('--source', 
+        dest='source', help='source project path')
+    parser.add_option('--compare', 
+        dest='compare', help='compare project path')
+    parser.add_option('--number', 
+        dest='number', type='int', default=10, help='number of results')
     parser.add_option('-r', '--result', 
-        dest='result_file', metavar='FILE', default='analysis_result', help='')
+        dest='result_file', metavar='FILE', default='analysis_result.csv', help='result csv format file')
 
     return parser
 
@@ -87,7 +89,7 @@ def analyzeDirDiff(srcPath, comPath, filterFlag=False):
 
 # first do the same thing as analyzeDirDiff
 # and then put src_only_array and com_only_array to common_array
-def analyzeDirDiffWithOnly(srcPath, comPath, filterFlag = False):
+def analyzeDirDiffWithOnly(srcPath, comPath, filterFlag=False):
     src_only_array, com_only_array, common_array = analyzeDirDiff(srcPath, comPath, filterFlag)
     appendSrcOnlyArrayToCommonArray(src_only_array, common_array)
     appendComOnlyArrayToCommonArray(com_only_array, common_array)
@@ -124,7 +126,7 @@ def appendListFromList(srcList, desList):
 
 
 # append file size to array for storage
-def appendSizeToArray(plist, root, array, filterFlag = False):
+def appendSizeToArray(plist, root, array, filterFlag=False):
     for name in plist:
         path = root + os.sep + name
         if os.path.isdir(path):
@@ -135,7 +137,7 @@ def appendSizeToArray(plist, root, array, filterFlag = False):
             appendFileSizeToArray(path, array, filterFlag)
 
 # append file to array
-def appendFileSizeToArray(path, array, filterFlag = False):
+def appendFileSizeToArray(path, array, filterFlag=False):
     if filterFlag:
         if filterRegexCheck(path) == False:
             obj = {
