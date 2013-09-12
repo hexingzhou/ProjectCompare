@@ -1,3 +1,8 @@
+"""
+A tool to compare two project in source and compare path.
+It also calculate the size of files in two paths, and find
+files with biggest different in size.
+"""
 import csv
 import filecmp
 import getopt
