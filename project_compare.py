@@ -233,13 +233,13 @@ def calcRegexFilesSize(src_array, com_array, common_array):
 
 # get positive increase changed files from common array
 def getPositiveIncreaseChangedFiles(array, number):
-    sorted_array = sorted(array, key = lambda x:x['diff_size'], reverse = True)
+    sorted_array = sorted(array, key=lambda x:x['diff_size'], reverse=True)
     return getIncreaseChangedFiles(sorted_array, number)
 
 
 # get negative increase changed files from common array
 def getNegativeIncreaseChangedFiles(array, number):
-    sorted_array = sorted(array, key = lambda x:x['diff_size'])
+    sorted_array = sorted(array, key=lambda x:x['diff_size'])
     return getIncreaseChangedFiles(sorted_array, number)
 
 

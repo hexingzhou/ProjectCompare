@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <task id="file">
+        <list id="filter_regex">
+            <string>.*\\\.svn\\.*</string>
+            <string>.*\\bin\\.*</string>
+            <string>.*\\gen\\.*</string>
+            <string>.*\\pack\\.*</string>
+        </list>
+        <list id="match_regex" size_limit="51200">
+            <string>*.png</string>
+            <string>*.PNG</string>
+            <string>*.jpg</string>
+            <string>*.JPG</string>
+            <string>*.jpeg</string>
+            <string>*.JPEG</string>
+        </list>
+        <list id="count_regex">
+            <string>*.\\src\\.*</string>
+        </list>
+    </task>
+</project>
