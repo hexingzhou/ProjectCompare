@@ -5,17 +5,17 @@ import random
 
 # change the normal string to a formatted string
 def change_to_formatted(string):
-    _string = string.strip()
+    astring = string.strip()
     flag = False
-    if contains_comma(_string):
+    if contains_comma(astring):
         flag = True
-    if contains_quotation_mark(_string):
-        _string = _string.replace('\"', '\"\"')
+    if contains_quotation_mark(astring):
+        astring = astring.replace('\"', '\"\"')
         flag = True
     if flag:
-        _string = '\"' + _string + '\"'
+        astring = '\"' + astring + '\"'
 
-    return _string
+    return astring
 
 
 # check the string contains comma or not
@@ -38,34 +38,34 @@ def contains_quotation_mark(string):
 #         to be set in the string
 # [return] a formatted string
 def change_dict_to_string(dict_value, tag_array):
-    __random_magic_word = _random_magic_word()
-    _string = ''
+    a_random_magic_word = _random_magic_word()
+    astring = ''
     for tag in tag_array:
-        if len(_string) > 0:
-                _string += ','
+        if len(astring) > 0:
+                astring += ','
         if tag in dict_value:
-            __str = change_to_formatted(str(dict_value[tag]))
-            if len(__str) > 0:
-                _string += __str
+            astr = change_to_formatted(str(dict_value[tag]))
+            if len(astr) > 0:
+                astring += astr
             else:
-                _string += __random_magic_word
+                astring += a_random_magic_word
         else:
-            _string += __random_magic_word
-    _string = _string.replace(__random_magic_word, '')
+            astring += a_random_magic_word
+    astring = astring.replace(a_random_magic_word, '')
 
-    return _string
+    return astring
 
 
 # change content of a tag array to a string
 # for describe the head information in .csv file
 def change_tags_to_string(tag_array):
-    _string = ''
+    astring = ''
     for tag in tag_array:
-        if len(_string) > 0:
-            _string += ','
-        _string += str(tag)
+        if len(astring) > 0:
+            astring += ','
+        astring += str(tag)
     
-    return _string
+    return astring
 
 # write content in a dict to .csv file
 # [param] filename: name of file to be written
@@ -78,11 +78,11 @@ def change_tags_to_string(tag_array):
 # [param] tag_array: tag for dict in the array
 def write_array_dict_to_file(filename, array_dict, tag_array):
     with open(filename, 'w') as csv:
-        _head_string = change_tags_to_string(tag_array)
-        csv.writelines(_head_string + '\n')
+        head_string = change_tags_to_string(tag_array)
+        csv.writelines(head_string + '\n')
         for d in array_dict:
-            _content_string = change_dict_to_string(d, tag_array)
-            csv.writelines(_content_string + '\n')
+            content_string = change_dict_to_string(d, tag_array)
+            csv.writelines(content_string + '\n')
 
 
 # a magic word for formatted creation progress

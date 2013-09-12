@@ -2,10 +2,10 @@
 <project>
     <task id="file">
         <list id="filter_regex">
-            <string>.*\\\.svn\\.*</string>
-            <string>.*\\bin\\.*</string>
-            <string>.*\\gen\\.*</string>
-            <string>.*\\pack\\.*</string>
+            <string>.*/\.svn/.*</string>
+            <string>.*/bin/.*</string>
+            <string>.*/gen/.*</string>
+            <string>.*/pack/.*</string>
         </list>
         <list id="match_regex" size_limit="51200">
             <string>*.png</string>
@@ -16,7 +16,7 @@
             <string>*.JPEG</string>
         </list>
         <list id="count_regex">
-            <string>*.\\src\\.*</string>
+            <string>*./src/.*</string>
         </list>
     </task>
 </project>

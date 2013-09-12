@@ -119,6 +119,7 @@ def appendComOnlyArrayToCommonArray(onlyArray, commonArray):
         }
         commonArray.append(obj)
 
+
 # append contents in one list to another
 def appendListFromList(srcList, desList):
     for obj in srcList:
@@ -136,6 +137,7 @@ def appendSizeToArray(plist, root, array, filterFlag=False):
         else:
             appendFileSizeToArray(path, array, filterFlag)
 
+
 # append file to array
 def appendFileSizeToArray(path, array, filterFlag=False):
     if filterFlag:
@@ -145,6 +147,7 @@ def appendFileSizeToArray(path, array, filterFlag=False):
                 'size': os.stat(path)[stat.ST_SIZE]
             }
             array.append(obj)
+
 
 # parse compare config xml file to get
 # 1. filter regular expression list
@@ -164,6 +167,7 @@ def parseCompareConfigFile(filename):
                     countRegexList.append(string.text)
     except IOError, e:
         print 'IOError parseCompareConfigFile(filename):', e
+
 
 # using patterns in filter regular expression list to check string
 # if any pattern match, return True, or return False
