@@ -2,21 +2,26 @@
 <project>
     <task id="file">
         <list id="filter_regex">
-            <string>.*/\.svn/.*</string>
-            <string>.*/bin/.*</string>
-            <string>.*/gen/.*</string>
-            <string>.*/pack/.*</string>
+            <string>.*\\\.svn\\.*</string>
+            <string>.*\\bin\\.*</string>
+            <string>.*\\gen\\.*</string>
+            <string>.*\\pack\\.*</string>
+            <string>.*\\\.git\\.*</string>
         </list>
-        <list id="match_regex" size_limit="51200">
-            <string>*.png</string>
-            <string>*.PNG</string>
-            <string>*.jpg</string>
-            <string>*.JPG</string>
-            <string>*.jpeg</string>
-            <string>*.JPEG</string>
+        <list id="match_regex" size_large_than="51200">
+            <string>.*\.png</string>
+            <string>.*\.PNG</string>
+            <string>.*\.jpg</string>
+            <string>.*\.JPG</string>
+            <string>.*\.jpeg</string>
+            <string>.*\.JPEG</string>
         </list>
+        <!-- count regex may not be used this time -->
+        <!--
         <list id="count_regex">
-            <string>*./src/.*</string>
+            <string>.*\\src\\.*</string>
+            <string>.*\.md</string>
         </list>
+        -->
     </task>
 </project>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <task id="lint">
+        <list id="match_regex" belong="UnusedResources" in_attribute="message">
+            <string>.*R\.layout\..*</string>
+            <string>.*R\.drawable\..*</string>
+        </list>
+        <list id="clean_issue" not_belong="NewApi"/>
+    </task>
+</project>

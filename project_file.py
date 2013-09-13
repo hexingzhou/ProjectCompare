@@ -5,13 +5,20 @@ It may create report for the result.
 import csv
 import optparse
 import os
+import project_config
+import re
 import stat
 import sys
 import xml.etree.ElementTree as et
 
 
+__KByte_Div = 1024
+__MByte_Div = 1024 * __KByte_Div
+__GByte_Div = 1024 * __MByte_Div
+
+
 # create option parser
-def create_option_parser():
+def _create_option_parser():
     usage = 'usage: %prog [options] project_path'
     version = '%prog 1.0'
     parser = optparse.OptionParser(usage=usage, version=version)
@@ -25,85 +32,192 @@ def create_option_parser():
     return parser
 
 
-# parse config xml file to project dict
-def parse_config_file(filename):
-    project = {}
-
-    root = et.parse(filename).getroot()
-
-    all_task = root.findall('task')
-    project['task_array'] = []
-    for task in all_task:
-        task_dict = parse_config_task(task)
-        project['task_array'].append(task_dict)
-
-    return project
-
-
-# parse a task tag in config xml file to task dict
-def parse_config_task(task):
-    task_dict = {}
-
-    tid = task.get('id')
-    if tid is not None:
-        task_dict['id'] = tid
-
-        all_list = task.findall('list')
-        task_dict['list_array'] = []
-        for alist in all_list:
-            list_dict = parse_config_list(alist)
-            task_dict['list_array'].append(list_dict)
-    
-    return task_dict
+# check path with count regex
+# [param] project_dict: a project dict get from config xml
+#                      file contains count regex used
+#                      for path string check
+# [return] True if match anly one of count regex,
+#          False if not
+def check_path_with_count(path, project_dict):
+    result = False
+    if 'task_array' in project_dict:
+        task_array = project_dict['task_array']
+        for task_dict in task_array:
+            if 'id' in task_dict and 'list_array' in task_dict:
+                if task_dict['id'] == 'file':
+                    list_array = task_dict['list_array']
+                    for list_dict in list_array:
+                        if _check_path_with_count_dict(path, list_dict):
+                            result = True
+                            break
+    return result
 
 
-def parse_config_list(alist):
-    list_dict = {}
+# check path with count regex
+# [param] list_dict: a list dict get from config xml
+#                    file contains count regex used
+#                    for path string check
+# [return] True if match anly one of count regex,
+#          False if not
+def _check_path_with_count_dict(path, list_dict):
+    result = False
+    if 'id' in list_dict and 'string_array' in list_dict:
+        if list_dict['id'] == 'count_regex':
+            string_array = list_dict['string_array']
+            for pattern in string_array:
+                if re.match(pattern, path) is not None:
+                    result = True
+                    break
+    return result
 
-    lid = alist.get('id')
-    if lid is not None:
-        list_dict['id'] = lid
 
-        all_string = alist.findall('string')
-        list_dict['string_array'] = []
-        for astring in all_string:
-            list_dict['string_array'].append(astring.text)
+# check path with match regex
+# [param] project_dict: a project dict get from config xml
+#                      file contains match regex used
+#                      for path string check
+# [return] result, conditions
+#          result: True if match anly one of match regex,
+#                  False if not
+#          conditions: an array contains all conditions matched
+def check_path_with_match(path, project_dict):
+    result = False
+    conditions = []
+    if 'task_array' in project_dict:
+        task_array = project_dict['task_array']
+        for task_dict in task_array:
+            if 'id' in task_dict and 'list_array' in task_dict:
+                if task_dict['id'] == 'file':
+                    list_array = task_dict['list_array']
+                    for list_dict in list_array:
+                        res, condition = _check_path_with_match_dict(path, list_dict)
+                        if res:
+                            conditions.append(condition)
+                            result = True
+    return result, conditions
 
-    return list_dict
+
+# check path with match regex
+# [param] list_dict: a list dict get from config xml
+#                      file contains match regex used
+#                      for path string check
+# [return] result, condition
+#          result: True if match anly one of match regex, 
+#                  False if not
+#          condition: a dict contains conditions
+def _check_path_with_match_dict(path, list_dict):
+    result = False
+    condition = None
+    if 'id' in list_dict and 'string_array' in list_dict:
+        if list_dict['id'] == 'match_regex':
+            condition = _get_condition_with_match_dict(list_dict)
+            if _check_path_with_condition(path, condition):
+                string_array = list_dict['string_array']
+                for pattern in string_array:
+                    if re.match(pattern, path) is not None:
+                        result = True
+                        break
+    return result, condition
+
+
+def _get_condition_with_match_dict(list_dict):
+    condition = {}
+    if 'size_large_than' in list_dict:
+        condition['size_large_than'] = list_dict['size_large_than']
+    return condition
+
+
+# check path satisfy all conditions
+# [param] condition: a dict contains all conditions
+# [return] True if path satisfy all conditions,
+#          False if not
+def _check_path_with_condition(path, condition):
+    result = True
+    if 'size_large_than' in condition:
+        if os.stat(path)[stat.ST_SIZE] <= int(condition['size_large_than']):
+            result = False
+    return result
+
+
+# check path with filter regex
+# [param] project_dict: a project dict get from config xml
+#                      file contains filter regex used
+#                      for path string check
+# [return] True if match anly one of filter regex,
+#          False if not
+def check_path_with_filter(path, project_dict):
+    result = False
+    if 'task_array' in project_dict:
+        task_array = project_dict['task_array']
+        for task_dict in task_array:
+            if 'id' in task_dict and 'list_array' in task_dict:
+                if task_dict['id'] == 'file':
+                    list_array = task_dict['list_array']
+                    for list_dict in list_array:
+                        if _check_path_with_filter_dict(path, list_dict):
+                            result = True
+                            break
+    return result
+
+
+# check path with filter regex
+# [param] list_dict: a list dict get from config xml
+#                    file contains filter regex used
+#                    for path string check
+# [return] True if match anly one of filter regex,
+#          False if not
+def _check_path_with_filter_dict(path, list_dict):
+    result = False
+    if 'id' in list_dict and 'string_array' in list_dict:
+        if list_dict['id'] == 'filter_regex':
+            string_array = list_dict['string_array']
+            for pattern in string_array:
+                if re.match(pattern, path) is not None:
+                    result = True
+                    break
+    return result
 
 
 # calculate file size in a path
 # and set it in res_array
 # [param] path: file path for analysis
 def calc_file_size(path, sort_reverse=True):
-    _result_array = []
+    result_array = []
     for dirpath, dirnames, filenames in os.walk(path):
         for name in filenames:
-            _path = os.path.join(dirpath, name)
-            _obj = {
-                'path': _path,
-                'size': os.stat(_path)[stat.ST_SIZE]
+            apath = os.path.join(dirpath, name)
+            obj = {
+                'path': apath,
+                'size': os.stat(apath)[stat.ST_SIZE]
             }
-            _result_array.append(_obj)
+            result_array.append(obj)
 
-    _result_array = sorted(_result_array, key=lambda x:x['size'], reverse=sort_reverse)
-    return _result_array
+    result_array = sorted(result_array, key=lambda x:x['size'], reverse=sort_reverse)
+    return result_array
 
 
 # check options and args
-def check_options_and_args(options, args):
+def _check_options_and_args(options, args):
     if len(args) == 0:
         print 'no project_path'
         sys.exit()
 
 
 if __name__ == '__main__':
-    parser = create_option_parser()
+    parser = _create_option_parser()
     (options, args) = parser.parse_args()
-    check_options_and_args(options, args)
+    _check_options_and_args(options, args)
 
-    print parse_config_file(options.config_file)
+    project_dict = project_config.parse_config_file(options.config_file)
 
     array_dict = calc_file_size(args[0])
-    tag_array = ['path', 'size']
-    csv.write_array_dict_to_file(options.result_file, array_dict, tag_array)
+    # tag_array = ['path', 'size']
+    # csv.write_array_dict_to_file(options.result_file, array_dict, tag_array)
+    for d in array_dict:
+        if check_path_with_filter(d['path'], project_dict):
+            continue
+        result, conditions = check_path_with_match(d['path'], project_dict)
+        if result:
+            for condition in conditions:
+                if 'size_large_than' in condition:
+                    print int(d['size'] / __KByte_Div), d['path'], condition['size_large_than']
+                    break
