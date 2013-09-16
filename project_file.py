@@ -2,12 +2,14 @@
 To analyze file size in a project.
 It may create report for the result.
 """
+import butils
 import csv
 import optparse
 import os
 import project_config
 import re
 import stat
+import svn
 import sys
 import xml.etree.ElementTree as et
 
@@ -27,7 +29,7 @@ def _create_option_parser():
         dest='config_file', metavar='FILE', default='project_file_config.xml', help='config xml file')
     parser.add_option('-r', '--result', 
         dest='result_file', metavar='FILE', default='project_file_analysis_result.csv', 
-        help='result csv format file')
+        help='analysis result file')
 
     return parser
 
@@ -209,9 +211,12 @@ if __name__ == '__main__':
 
     project_dict = project_config.parse_config_file(options.config_file)
 
+    print 'calculate file size...'
     array_dict = calc_file_size(args[0])
-    # tag_array = ['path', 'size']
-    # csv.write_array_dict_to_file(options.result_file, array_dict, tag_array)
+
+    print 'check file author...'
+    svn.set_svn_tool('svn')
+    result_array = {}
     for d in array_dict:
         if check_path_with_filter(d['path'], project_dict):
             continue
@@ -219,5 +224,20 @@ if __name__ == '__main__':
         if result:
             for condition in conditions:
                 if 'size_large_than' in condition:
-                    print int(d['size'] / __KByte_Div), d['path'], condition['size_large_than']
+                    log_string = svn.svn_log(d['path'], 1)
+                    log_name = butils.get_lastest_name_from_svn_log(log_string)
+                    if log_name in result_array:
+                        pass
+                    else:
+                        result_array[log_name] = []
+                    result_array[log_name].append((d['size'], d['path'], condition['size_large_than']))
                     break
+
+    print 'write result to file...'
+    with open(options.result_file, 'w') as rfile:
+        rfile.writelines('Here are some files too large:\n')
+        for name in result_array:
+            rfile.writelines('\n')
+            rfile.writelines('Author: ' + name + '\n')
+            for m in result_array[name]:
+                rfile.writelines('|-> ' + m[1] + ' ' + str(m[0] / __KByte_Div) + 'K\n')

@@ -24,8 +24,8 @@ def _create_option_parser():
     parser.add_option('--lint-result',
         dest='lint_result', metavar='FILE', help='lint result xml file')
     parser.add_option('-r', '--result', 
-        dest='result_file', metavar='FILE', default='lint_analyze_result', 
-        help='result file')
+        dest='result_file', metavar='FILE', default='lint_analyze_result.csv', 
+        help='analysis result file')
 
     return parser
 
@@ -38,6 +38,45 @@ def _check_options_and_args(options, args):
     if options.android_project_root is None:
         print 'android project root path is empty!'
         sys.exit()
+
+
+# check path with filter regex
+# [param] project_dict: a project dict get from config xml
+#                      file contains filter regex used
+#                      for path string check
+# [return] True if match anly one of filter regex,
+#          False if not
+def check_path_with_filter(path, project_dict):
+    result = False
+    if 'task_array' in project_dict:
+        task_array = project_dict['task_array']
+        for task_dict in task_array:
+            if 'id' in task_dict and 'list_array' in task_dict:
+                if task_dict['id'] == 'lint':
+                    list_array = task_dict['list_array']
+                    for list_dict in list_array:
+                        if _check_path_with_filter_dict(path, list_dict):
+                            result = True
+                            break
+    return result
+
+
+# check path with filter regex
+# [param] list_dict: a list dict get from config xml
+#                    file contains filter regex used
+#                    for path string check
+# [return] True if match anly one of filter regex,
+#          False if not
+def _check_path_with_filter_dict(path, list_dict):
+    result = False
+    if 'id' in list_dict and 'string_array' in list_dict:
+        if list_dict['id'] == 'filter_regex':
+            string_array = list_dict['string_array']
+            for pattern in string_array:
+                if re.match(pattern, path) is not None:
+                    result = True
+                    break
+    return result
 
 
 def check_unused_resources(path, project_dict):
@@ -113,6 +152,8 @@ def clean_lint_result(path, project_dict):
     tree = et.parse(path)
     clean_lint_result_tree(tree, project_dict)
 
+    tree.write(path, encoding='utf-8', xml_declaration=True)
+
 
 def clean_lint_result_tree(tree, project_dict):
     root = tree.getroot()
@@ -120,8 +161,6 @@ def clean_lint_result_tree(tree, project_dict):
     for issue in all_issues:
         if _check_issue_need_remove(issue, project_dict):
             root.remove(issue)
-
-    tree.write(path, encoding='utf-8', xml_declaration=True)
 
 
 def _check_issue_need_remove(issue, project_dict):
@@ -168,9 +207,12 @@ if __name__ == '__main__':
     svn.set_svn_tool('svn')
     result_dict = {}
 
+    print 'analyze lint result xml...'
     resource_array = check_unused_resources(options.lint_result, project_dict)
     svn.set_svn_tool('svn')
     for resource in resource_array:
+        if check_path_with_filter(resource, project_dict):
+            continue
         log_string = svn.svn_log(options.android_project_root + os.sep + resource, 1)
         log_name = butils.get_lastest_name_from_svn_log(log_string)
         if log_name is not None:
@@ -180,6 +222,7 @@ if __name__ == '__main__':
                 result_dict[log_name] = []
             result_dict[log_name].append(resource)
 
+    print 'write analysis result to file...'
     with open(options.result_file, 'w') as rfile:
         rfile.writelines('Here may be some unused resources:\n')
         for name in result_dict:
@@ -188,4 +231,5 @@ if __name__ == '__main__':
             for res in result_dict[name]:
                 rfile.writelines('|-> ' + res + '\n')
 
+    print 'clean lint result xml...'
     clean_lint_result(options.lint_result, project_dict)

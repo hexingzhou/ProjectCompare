@@ -6,5 +6,9 @@
             <string>.*R\.drawable\..*</string>
         </list>
         <list id="clean_issue" not_belong="NewApi"/>
+        <list id="filter_regex">
+            <string>.*\\zeus_.*</string>
+            <string>.*\\video_.*</string>
+        </list>
     </task>
 </project>
