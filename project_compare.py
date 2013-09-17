@@ -318,41 +318,18 @@ def calc_regex_files_size(src_array, com_array, common_array, project_dict):
         if res:
             append_count_strings_to_dict(com_obj['size'], strings, com_dict)
     for common_obj in common_array:
-        res, strings = check_path_with_count(common_obj['src_path'], project_dict)
-    for exp in countRegexList:
-        left_size = 0
-        right_size = 0
-        left_array = []
-        right_array = []
-        for obj in src_array:
-            if re.match(exp, obj['path']) is not None:
-                left_size += obj['size']
-                left_array.append(obj['path'])
-        for obj in com_array:
-            if re.match(exp, obj['path']) is not None:
-                right_size += obj['size']
-                right_array.append(obj['path'])
-        for obj in common_array:
-            if re.match(exp, obj['src_path']) is not None:
-                left_size += obj['src_size']
-                left_array.append(obj['src_path'])
-            if re.match(exp, obj['com_path']) is not None:
-                right_size += obj['com_size']
-                right_array.append(obj['com_path'])
-        sobj = {
-            'regex': exp,
-            'size': left_size,
-            'list': left_array
-        }
-        cobj = {
-            'regex': exp,
-            'size': right_size,
-            'list': right_array
-        }
-        src_list.append(sobj)
-        com_list.append(cobj)
+        res, strings = check_path_with_count(
+            common_obj['src_path'], project_dict)
+        if res:
+            append_count_strings_to_dict(
+                common_obj['src_size'], strings, src_dict)
+        res, strings = check_path_with_count(
+            common_obj['com_path'], project_dict)
+        if res:
+            append_count_strings_to_dict(
+                common_obj['com_size'], strings, com_dict)
 
-    return src_list, com_list
+    return src_dict, com_dict
     
 
 def get_pos_increase_change_files(array, number):
@@ -377,9 +354,9 @@ def get_increase_change_files(sorted_array, number):
     """
     array = []
     i = 0
-    for obj in sorted_array:
+    for fobj in sorted_array:
         if i < number:
-            array.append(obj)
+            array.append(fobj)
         else:
             break
         i = i + 1
@@ -394,7 +371,6 @@ if __name__ == '__main__':
     _check_options_and_args(options, args)
 
     project_dict = project_config.parse_config_file(options.config_file)
-    # parseCompareConfigFile(options.config_file)
 
     src_array, com_array, common_array = analyze_dir_diff_with_only(
         options.source, options.compare, project_dict)
@@ -405,13 +381,13 @@ if __name__ == '__main__':
     print 'total:'
     print total_size
 
-    src_list, com_list = calc_regex_files_size(src_array, com_array, common_array)
+    src_dict, com_dict = calc_regex_files_size(src_array, com_array, common_array, project_dict)
     print 'source:'
-    for obj in src_list:
-        print obj['regex'], obj['size']
+    for string in src_dict:
+        print string, src_dict[string]
     print 'compare:'
-    for obj in com_list:
-        print obj['regex'], obj['size']
+    for string in com_dict:
+        print string, com_dict[string]
 
     tag_array = ['src_path', 'com_path', 'src_size', 'com_size', 'diff_size']
     for n in negative_array:
