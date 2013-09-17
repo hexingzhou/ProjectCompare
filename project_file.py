@@ -19,8 +19,10 @@ __MByte_Div = 1024 * __KByte_Div
 __GByte_Div = 1024 * __MByte_Div
 
 
-# create option parser
 def _create_option_parser():
+    """
+    create option parser
+    """
     usage = 'usage: %prog [options] project_path'
     version = '%prog 1.0'
     parser = optparse.OptionParser(usage=usage, version=version)
@@ -34,14 +36,19 @@ def _create_option_parser():
     return parser
 
 
-# check path with count regex
-# [param] project_dict: a project dict get from config xml
-#                      file contains count regex used
-#                      for path string check
-# [return] True if match anly one of count regex,
-#          False if not
 def check_path_with_count(path, project_dict):
+    """
+    check path with count regex
+    [param] project_dict: a project dict get from config xml
+                          file contains count regex used
+                          for path string check
+    [return] result, strings
+             result: True if match anly one of count regex,
+                     False if not
+             strings: pattern strings that matches path
+    """
     result = False
+    strings = []
     if 'task_array' in project_dict:
         task_array = project_dict['task_array']
         for task_dict in task_array:
@@ -49,39 +56,50 @@ def check_path_with_count(path, project_dict):
                 if task_dict['id'] == 'file':
                     list_array = task_dict['list_array']
                     for list_dict in list_array:
-                        if _check_path_with_count_dict(path, list_dict):
+                        res, strs = _check_path_with_count_dict(path, list_dict)
+                        if res:
                             result = True
+                            for astr in strs:
+                                strings.append(astr)
                             break
-    return result
+    return result, strings
 
 
-# check path with count regex
-# [param] list_dict: a list dict get from config xml
-#                    file contains count regex used
-#                    for path string check
-# [return] True if match anly one of count regex,
-#          False if not
 def _check_path_with_count_dict(path, list_dict):
+    """
+    check path with count regex
+    [param] list_dict: a list dict get from config xml
+                       file contains count regex used
+                       for path string check
+    [return] result, strings
+             result: True if match anly one of count regex,
+                     False if not
+             strings: pattern strings that matches path
+    """
     result = False
+    strings = []
     if 'id' in list_dict and 'string_array' in list_dict:
         if list_dict['id'] == 'count_regex':
             string_array = list_dict['string_array']
             for pattern in string_array:
                 if re.match(pattern, path) is not None:
                     result = True
+                    strings.append(pattern)
                     break
-    return result
+    return result, strings
 
 
-# check path with match regex
-# [param] project_dict: a project dict get from config xml
-#                      file contains match regex used
-#                      for path string check
-# [return] result, conditions
-#          result: True if match anly one of match regex,
-#                  False if not
-#          conditions: an array contains all conditions matched
 def check_path_with_match(path, project_dict):
+    """
+    check path with match regex
+    [param] project_dict: a project dict get from config xml
+                          file contains match regex used
+                          for path string check
+    [return] result, conditions
+             result: True if match anly one of match regex,
+                    False if not
+             conditions: an array contains all conditions matched
+    """
     result = False
     conditions = []
     if 'task_array' in project_dict:
@@ -98,15 +116,17 @@ def check_path_with_match(path, project_dict):
     return result, conditions
 
 
-# check path with match regex
-# [param] list_dict: a list dict get from config xml
-#                      file contains match regex used
-#                      for path string check
-# [return] result, condition
-#          result: True if match anly one of match regex, 
-#                  False if not
-#          condition: a dict contains conditions
 def _check_path_with_match_dict(path, list_dict):
+    """
+    check path with match regex
+    [param] list_dict: a list dict get from config xml
+                       file contains match regex used
+                       for path string check
+    [return] result, condition
+             result: True if match anly one of match regex, 
+                     False if not
+             condition: a dict contains conditions
+    """
     result = False
     condition = None
     if 'id' in list_dict and 'string_array' in list_dict:
@@ -140,13 +160,15 @@ def _check_path_with_condition(path, condition):
     return result
 
 
-# check path with filter regex
-# [param] project_dict: a project dict get from config xml
-#                      file contains filter regex used
-#                      for path string check
-# [return] True if match anly one of filter regex,
-#          False if not
 def check_path_with_filter(path, project_dict):
+    """
+    check path with filter regex
+    [param] project_dict: a project dict get from config xml
+                          file contains filter regex used
+                          for path string check
+    [return] True if match anly one of filter regex,
+             False if not
+    """
     result = False
     if 'task_array' in project_dict:
         task_array = project_dict['task_array']
@@ -161,13 +183,15 @@ def check_path_with_filter(path, project_dict):
     return result
 
 
-# check path with filter regex
-# [param] list_dict: a list dict get from config xml
-#                    file contains filter regex used
-#                    for path string check
-# [return] True if match anly one of filter regex,
-#          False if not
 def _check_path_with_filter_dict(path, list_dict):
+    """
+    check path with filter regex
+    [param] list_dict: a list dict get from config xml
+                       file contains filter regex used
+                       for path string check
+    [return] True if match anly one of filter regex,
+             False if not
+    """
     result = False
     if 'id' in list_dict and 'string_array' in list_dict:
         if list_dict['id'] == 'filter_regex':
@@ -179,10 +203,11 @@ def _check_path_with_filter_dict(path, list_dict):
     return result
 
 
-# calculate file size in a path
-# and set it in res_array
-# [param] path: file path for analysis
 def calc_file_size(path, sort_reverse=True):
+    """
+    calculate file size in a path and set it in res_array
+    [param] path: file path for analysis
+    """
     result_array = []
     for dirpath, dirnames, filenames in os.walk(path):
         for name in filenames:
@@ -193,12 +218,15 @@ def calc_file_size(path, sort_reverse=True):
             }
             result_array.append(obj)
 
-    result_array = sorted(result_array, key=lambda x:x['size'], reverse=sort_reverse)
+    result_array = sorted(
+        result_array, key=lambda x:x['size'], reverse=sort_reverse)
     return result_array
 
 
-# check options and args
 def _check_options_and_args(options, args):
+    """
+    check options and args
+    """
     if len(args) == 0:
         print 'no project_path'
         sys.exit()
