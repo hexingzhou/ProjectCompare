@@ -1,4 +1,4 @@
-test
+ProjectCompare
 ====
 
-This is a test repository of hexingzhou
+Compare between two projects.
